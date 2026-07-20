@@ -15,3 +15,18 @@ HEADERS = {
     "Authorization": f"Bearer {SUPABASE_KEY}",
     "Content-Type": "application/json"
 }
+def test_supabase():
+
+    url = SUPABASE_URL + "/rest/v1/stocks?select=*"
+
+    response = requests.get(
+        url,
+        headers=HEADERS
+    )
+
+    print("Status :", response.status_code)
+    print(response.text)
+
+
+if __name__ == "__main__":
+    test_supabase()
