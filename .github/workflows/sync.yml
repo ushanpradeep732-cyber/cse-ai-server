@@ -16,7 +16,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Test
+      - name: Install Packages
         run: |
-          echo "CSE AI Server Started"
-          python --version
+          pip install requests
+
+      - name: Run Server
+        run: |
+          python main.py
