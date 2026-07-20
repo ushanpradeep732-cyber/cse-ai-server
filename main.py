@@ -7,8 +7,10 @@ print("CSE AI Auto Sync Started")
 print("Time :", datetime.now())
 print("===================================")
 
-SUPABASE_URL = "YOUR_SUPABASE_URL"
-SUPABASE_KEY = "YOUR_SUPABASE_API_KEY"
+import os
+
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 
 HEADERS = {
     "apikey": SUPABASE_KEY,
