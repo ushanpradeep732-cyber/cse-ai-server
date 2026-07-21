@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
-
 import requests
-from cse_scraper import scan_homepage
+
+from cse_scraper import scan_homepage, test_market_summary
 
 print("===================================")
 print("CSE AI Auto Sync Started")
@@ -22,7 +22,11 @@ HEADERS = {
 def test_supabase():
     url = SUPABASE_URL + "/rest/v1/stocks?select=*"
 
-    response = requests.get(url, headers=HEADERS)
+    response = requests.get(
+        url,
+        headers=HEADERS,
+        timeout=30
+    )
 
     print("Supabase Status :", response.status_code)
 
@@ -36,7 +40,10 @@ def test_supabase():
 def test_cse():
     url = "https://www.cse.lk/"
 
-    response = requests.get(url, timeout=30)
+    response = requests.get(
+        url,
+        timeout=30
+    )
 
     print("CSE Status :", response.status_code)
 
@@ -47,6 +54,10 @@ def test_cse():
 
 
 def main():
+    print("===================================")
+    print("Starting Tests")
+    print("===================================")
+
     test_supabase()
     test_cse()
 
@@ -57,7 +68,13 @@ def main():
     scan_homepage()
 
     print("===================================")
-    print("Scanner Finished")
+    print("Testing Market Summary API")
+    print("===================================")
+
+    test_market_summary()
+
+    print("===================================")
+    print("All Tests Finished")
     print("===================================")
 
 
