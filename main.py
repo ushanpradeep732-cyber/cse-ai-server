@@ -43,3 +43,4 @@ def test_cse():
 if __name__ == "__main__":
     test_supabase()
     test_cse()
+    scan_homepage()
