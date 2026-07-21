@@ -1,35 +1,55 @@
 import requests
+import json
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0"
+    "User-Agent": "Mozilla/5.0",
+    "Content-Type": "application/json"
 }
-
-CANDIDATE_ENDPOINTS = [
-    "https://www.cse.lk/api/companyInfoSummery",
-    "https://www.cse.lk/api/companyList",
-    "https://www.cse.lk/api/listedCompanies",
-    "https://www.cse.lk/api/companies"
-]
 
 
 def test_company_api():
-    print("========== COMPANY API TEST ==========")
 
-    for url in CANDIDATE_ENDPOINTS:
-        print(f"\nTesting: {url}")
+    symbol = "JKH.N0000"
 
-        try:
-            response = requests.post(
-                url,
-                headers=HEADERS,
-                timeout=30
-            )
+    url = "https://www.cse.lk/api/companyInfoSummery"
 
-            print("Status:", response.status_code)
-            print("Content-Type:", response.headers.get("Content-Type"))
-            print(response.text[:400])
+    payload = {
+        "symbol": symbol
+    }
 
-        except Exception as e:
-            print("ERROR:", e)
+    print("===================================")
+    print("COMPANY INFO TEST")
+    print("===================================")
+    print("Symbol :", symbol)
 
-    print("\n========== END ==========")
+    try:
+
+        response = requests.post(
+            url,
+            headers=HEADERS,
+            json=payload,
+            timeout=30
+        )
+
+        print("Status :", response.status_code)
+        print("Content-Type :", response.headers.get("Content-Type"))
+
+        print("Response:")
+        print(response.text)
+
+        if response.status_code == 200:
+            try:
+                data = response.json()
+
+                print("\nParsed JSON")
+                print(json.dumps(data, indent=2))
+
+            except Exception:
+                print("JSON Parse Failed")
+
+    except Exception as e:
+        print("ERROR :", e)
+
+    print("===================================")
+    print("TEST FINISHED")
+    print("===================================")
