@@ -3,6 +3,10 @@ name: CSE AI Daily Sync
 on:
   workflow_dispatch:
 
+  schedule:
+    - cron: "*/15 * * * *"
+  
+
 jobs:
   sync:
     runs-on: ubuntu-latest
