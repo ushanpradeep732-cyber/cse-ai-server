@@ -3,6 +3,7 @@ from datetime import datetime
 import requests
 
 from cse_scraper import scan_homepage, test_market_summary
+from price_importer import test_today_share_price
 
 print("===================================")
 print("CSE AI Auto Sync Started")
@@ -54,6 +55,7 @@ def test_cse():
 
 
 def main():
+
     print("===================================")
     print("Starting Tests")
     print("===================================")
@@ -72,6 +74,12 @@ def main():
     print("===================================")
 
     test_market_summary()
+
+    print("===================================")
+    print("Testing Today Share Price API")
+    print("===================================")
+
+    test_today_share_price()
 
     print("===================================")
     print("All Tests Finished")
