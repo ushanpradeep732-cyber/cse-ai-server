@@ -1,15 +1,6 @@
 import os
-from datetime import datetime
 import requests
-
-from cse_scraper import scan_homepage, test_market_summary
-from price_importer import test_today_share_price
-from company_importer import test_company_api
-
-print("===================================")
-print("CSE AI Auto Sync Started")
-print("Time :", datetime.now())
-print("===================================")
+from datetime import datetime
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_KEY"]
@@ -20,78 +11,71 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
+print("===================================")
+print("CSE AI AUTO IMPORT")
+print(datetime.now())
+print("===================================")
 
-def test_supabase():
-    url = SUPABASE_URL + "/rest/v1/stocks?select=*"
+# --------------------------
+# Load Stocks from Supabase
+# --------------------------
 
-    response = requests.get(
-        url,
-        headers=HEADERS,
-        timeout=30
+stocks_url = SUPABASE_URL + "/rest/v1/stocks?select=id,symbol"
+
+stocks = requests.get(stocks_url, headers=HEADERS).json()
+
+stock_map = {}
+
+for s in stocks:
+    stock_map[s["symbol"]] = s["id"]
+
+print("Stocks Loaded :", len(stock_map))
+
+# --------------------------
+# Download CSE Prices
+# --------------------------
+
+url = "https://www.cse.lk/api/todaySharePrice"
+
+response = requests.get(url)
+
+print("CSE Status :", response.status_code)
+
+prices = response.json()
+
+today = datetime.now().strftime("%Y-%m-%d")
+
+count = 0
+
+for item in prices:
+
+    symbol = item["symbol"]
+
+    if symbol not in stock_map:
+        continue
+
+    payload = {
+        "stock_id": stock_map[symbol],
+        "trade_date": today,
+        "open_price": item.get("open"),
+        "high_price": item.get("high"),
+        "low_price": item.get("low"),
+        "close_price": item.get("lastTradedPrice"),
+        "volume": item.get("quantity", 0)
+    }
+
+    requests.post(
+        SUPABASE_URL + "/rest/v1/daily_prices",
+        headers={
+            **HEADERS,
+            "Prefer": "resolution=merge-duplicates"
+        },
+        json=payload
     )
 
-    print("Supabase Status :", response.status_code)
+    count += 1
 
-    if response.status_code == 200:
-        print("Supabase Connected")
-    else:
-        print("Supabase Error")
-        print(response.text)
-
-
-def test_cse():
-    url = "https://www.cse.lk/"
-
-    response = requests.get(
-        url,
-        timeout=30
-    )
-
-    print("CSE Status :", response.status_code)
-
-    if response.status_code == 200:
-        print("CSE Website Connected")
-    else:
-        print("Cannot connect to CSE")
-
-
-def main():
-
-    print("===================================")
-    print("Starting Tests")
-    print("===================================")
-
-    test_supabase()
-    test_cse()
-
-    print("===================================")
-    print("Starting CSE Scanner")
-    print("===================================")
-
-    scan_homepage()
-
-    print("===================================")
-    print("Testing Market Summary API")
-    print("===================================")
-
-    test_market_summary()
-
-    print("===================================")
-    print("Testing Today Share Price API")
-    print("===================================")
-
-    test_today_share_price()
-
-    print("===================================")
-    print("Testing Company API")
-    print("===================================")
-
-    test_company_api()
-
-    print("===================================")
-    print("All Tests Finished")
-    print("===================================")
-
-
-if __name__ == "__main__":
-    main()
+print("===================================")
+print("Imported :", count)
+print("Finished")
+print("===================================")
