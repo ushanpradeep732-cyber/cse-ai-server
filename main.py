@@ -4,6 +4,7 @@ import requests
 
 from cse_scraper import scan_homepage, test_market_summary
 from price_importer import test_today_share_price
+from company_importer import test_company_api
 
 print("===================================")
 print("CSE AI Auto Sync Started")
@@ -80,6 +81,12 @@ def main():
     print("===================================")
 
     test_today_share_price()
+
+    print("===================================")
+    print("Testing Company API")
+    print("===================================")
+
+    test_company_api()
 
     print("===================================")
     print("All Tests Finished")
