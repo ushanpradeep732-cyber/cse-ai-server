@@ -1,23 +1,27 @@
 import requests
-from bs4 import BeautifulSoup
+
+URLS = [
+    "https://www.cse.lk/",
+    "https://www.cse.lk/pages/market-summary/market-summary.component.html",
+    "https://www.cse.lk/api"
+]
 
 def scan_homepage():
-    url = "https://www.cse.lk/"
+    print("========== CSE Scanner ==========")
 
-    response = requests.get(url, timeout=30)
+    for url in URLS:
+        print(f"\nTesting : {url}")
 
-    print("CSE Home Status:", response.status_code)
+        try:
+            response = requests.get(url, timeout=30)
 
-    if response.status_code != 200:
-        return
+            print("Status :", response.status_code)
+            print("Content-Type :", response.headers.get("Content-Type"))
 
-    soup = BeautifulSoup(response.text, "lxml")
+            print("First 300 Characters")
+            print(response.text[:300])
 
-    print("Page Title:")
-    print(soup.title.text.strip())
+        except Exception as e:
+            print("ERROR :", e)
 
-    print("Links Found:")
-    links = soup.find_all("a", href=True)
-
-    for link in links[:20]:
-        print(link["href"])
+    print("\n========== Scan Finished ==========")
