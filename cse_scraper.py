@@ -1,27 +1,69 @@
 import requests
+from bs4 import BeautifulSoup
 
-URLS = [
-    "https://www.cse.lk/",
-    "https://www.cse.lk/pages/market-summary/market-summary.component.html",
-    "https://www.cse.lk/api"
-]
+HEADERS = {
+    "User-Agent": "Mozilla/5.0"
+}
+
 
 def scan_homepage():
     print("========== CSE Scanner ==========")
 
-    for url in URLS:
-        print(f"\nTesting : {url}")
+    url = "https://www.cse.lk/"
 
-        try:
-            response = requests.get(url, timeout=30)
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=30)
 
-            print("Status :", response.status_code)
-            print("Content-Type :", response.headers.get("Content-Type"))
+        print("CSE Home Status :", response.status_code)
+        print("Content-Type :", response.headers.get("Content-Type"))
 
-            print("First 300 Characters")
-            print(response.text[:300])
+        soup = BeautifulSoup(response.text, "lxml")
 
-        except Exception as e:
-            print("ERROR :", e)
+        if soup.title:
+            print("Page Title :", soup.title.text.strip())
 
-    print("\n========== Scan Finished ==========")
+        print("\nFirst 20 Links")
+
+        links = soup.find_all("a", href=True)
+
+        count = 0
+
+        for link in links:
+            href = link.get("href")
+
+            if href:
+                print(href)
+                count += 1
+
+            if count >= 20:
+                break
+
+        print("Total Links Found :", len(links))
+
+    except Exception as e:
+        print("Scanner Error :", e)
+
+    print("========== Scan Finished ==========")
+
+
+def test_market_summary():
+    print("\n========== Market Summary API ==========")
+
+    url = "https://www.cse.lk/api/marketSummery"
+
+    try:
+        response = requests.post(
+            url,
+            headers=HEADERS,
+            timeout=30
+        )
+
+        print("Status :", response.status_code)
+        print("Content-Type :", response.headers.get("Content-Type"))
+        print("Response :")
+        print(response.text[:500])
+
+    except Exception as e:
+        print("API Error :", e)
+
+    print("========== API Test Finished ==========")
