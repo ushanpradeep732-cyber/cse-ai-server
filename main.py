@@ -1,7 +1,9 @@
 import os
 from datetime import datetime
+
 import requests
 from cse_scraper import scan_homepage
+
 print("===================================")
 print("CSE AI Auto Sync Started")
 print("Time :", datetime.now())
@@ -16,6 +18,7 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
+
 def test_supabase():
     url = SUPABASE_URL + "/rest/v1/stocks?select=*"
 
@@ -26,7 +29,9 @@ def test_supabase():
     if response.status_code == 200:
         print("Supabase Connected")
     else:
+        print("Supabase Error")
         print(response.text)
+
 
 def test_cse():
     url = "https://www.cse.lk/"
@@ -40,7 +45,21 @@ def test_cse():
     else:
         print("Cannot connect to CSE")
 
-if __name__ == "__main__":
+
+def main():
     test_supabase()
     test_cse()
+
+    print("===================================")
+    print("Starting CSE Scanner")
+    print("===================================")
+
     scan_homepage()
+
+    print("===================================")
+    print("Scanner Finished")
+    print("===================================")
+
+
+if __name__ == "__main__":
+    main()
