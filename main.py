@@ -44,7 +44,12 @@ print("Stocks Loaded :", len(stock_map))
 
 url = "https://www.cse.lk/api/todaySharePrice"
 
-response = requests.get(url)
+response = response = requests.post(
+    url,
+    headers={
+        "User-Agent": "Mozilla/5.0"
+    }
+)
 
 print("CSE Status :", response.status_code)
 
