@@ -16,13 +16,20 @@ print("CSE AI AUTO IMPORT")
 print(datetime.now())
 print("===================================")
 
-# --------------------------
+# ---------------------------------
 # Load Stocks from Supabase
-# --------------------------
+# ---------------------------------
 
 stocks_url = SUPABASE_URL + "/rest/v1/stocks?select=id,symbol"
 
-stocks = requests.get(stocks_url, headers=HEADERS).json()
+response = requests.get(stocks_url, headers=HEADERS)
+
+if response.status_code != 200:
+    print("Cannot load stocks.")
+    print(response.text)
+    exit()
+
+stocks = response.json()
 
 stock_map = {}
 
@@ -31,9 +38,9 @@ for s in stocks:
 
 print("Stocks Loaded :", len(stock_map))
 
-# --------------------------
-# Download CSE Prices
-# --------------------------
+# ---------------------------------
+# Download Today Share Prices
+# ---------------------------------
 
 url = "https://www.cse.lk/api/todaySharePrice"
 
@@ -41,7 +48,19 @@ response = requests.get(url)
 
 print("CSE Status :", response.status_code)
 
-prices = response.json()
+if response.status_code != 200:
+    print(response.text)
+    exit()
+
+data = response.json()
+
+# API may return either a list or {"content":[...]}
+if isinstance(data, dict):
+    prices = data.get("content", [])
+else:
+    prices = data
+
+print("Price Records :", len(prices))
 
 today = datetime.now().strftime("%Y-%m-%d")
 
@@ -49,7 +68,13 @@ count = 0
 
 for item in prices:
 
-    symbol = item["symbol"]
+    if not isinstance(item, dict):
+        continue
+
+    symbol = item.get("symbol")
+
+    if not symbol:
+        continue
 
     if symbol not in stock_map:
         continue
@@ -64,7 +89,7 @@ for item in prices:
         "volume": item.get("quantity", 0)
     }
 
-    requests.post(
+    r = requests.post(
         SUPABASE_URL + "/rest/v1/daily_prices",
         headers={
             **HEADERS,
@@ -73,7 +98,12 @@ for item in prices:
         json=payload
     )
 
-    count += 1
+    if r.status_code not in (200, 201):
+        print("Insert Error :", symbol)
+        print("Status :", r.status_code)
+        print(r.text)
+    else:
+        count += 1
 
 print("===================================")
 print("Imported :", count)
