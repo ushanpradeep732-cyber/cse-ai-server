@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 import requests
-
+from cse_scraper import scan_homepage
 print("===================================")
 print("CSE AI Auto Sync Started")
 print("Time :", datetime.now())
