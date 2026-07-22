@@ -20,7 +20,7 @@ print("===================================")
 # Load Stocks from Supabase
 # ---------------------------------
 
-stocks_url = SUPABASE_URL + "/rest/v1/stocks?select=id,symbol"
+stocks_url = SUPABASE_URL + "/rest/v1/daily_prices?on_conflict=stock_id,trade_date"
 
 response = requests.get(stocks_url, headers=HEADERS)
 
@@ -97,11 +97,14 @@ for item in prices:
     r = requests.post(
         SUPABASE_URL + "/rest/v1/daily_prices",
         headers={
-            **HEADERS,
-            "Prefer": "resolution=merge-duplicates"
-        },
-        json=payload
-    )
+    **HEADERS,
+    "Prefer": "resolution=merge-duplicates"
+}
+            
+          
+        
+        
+    
 
     if r.status_code not in (200, 201):
         print("Insert Error :", symbol)
