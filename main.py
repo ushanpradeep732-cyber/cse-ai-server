@@ -42,7 +42,7 @@ print("Stocks Loaded :", len(stock_map))
 # Download Today Share Prices
 # ---------------------------------
 
-url = "https://www.cse.lk/api/todaySharePrice"
+url = "https://www.cse.lk/api/todaySharePrice?page=0&size=300"
 
 response = response = requests.post(
     url,
