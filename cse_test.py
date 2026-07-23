@@ -1,29 +1,31 @@
 import requests
 import json
 
-url = "https://www.cse.lk/api/todaySharePrice?page=0&size=300"
+url = "https://www.cse.lk/api/todaySharePrice"
 
 headers = {
-    "User-Agent": "Mozilla/5.0"
+    "User-Agent": "Mozilla/5.0",
+    "Content-Type": "application/json",
+    "Accept": "application/json"
 }
 
-response = requests.post(url, headers=headers)
+payload = {
+    "page": 0,
+    "size": 300
+}
 
-print("Status:", response.status_code)
-print("=" * 80)
+response = requests.post(url, headers=headers, json=payload)
 
-data = response.json()
+print("Status :", response.status_code)
 
-if isinstance(data, dict):
-    print("TYPE : DICT")
-    print("KEYS :", list(data.keys()))
+try:
+    data = response.json()
 
-    print("\nFULL RESPONSE:\n")
-    print(json.dumps(data, indent=2))
+    if isinstance(data, list):
+        print("Records :", len(data))
+        print(json.dumps(data[:3], indent=2))
+    else:
+        print(json.dumps(data, indent=2))
 
-else:
-    print("TYPE : LIST")
-    print("RECORDS :", len(data))
-
-    print("\nFIRST RECORD\n")
-    print(json.dumps(data[0], indent=2))
+except Exception:
+    print(response.text)
