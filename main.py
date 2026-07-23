@@ -49,16 +49,7 @@ response = requests.post(
     }
 )
 
-except requests.exceptions.Timeout:
-    print("Timeout :", symbol)
-    failed += 1
-    continue
-
-except requests.exceptions.RequestException as e:
-    print("Request Error :", symbol)
-    print(e)
-    failed += 1
-    continue
+print("CSE Status :", response.status_code)
 
 if response.status_code != 200:
     print(response.text)
@@ -83,16 +74,10 @@ symbols = sorted(stock_map.keys())
 
 print("Companies :", len(symbols))
 
-print("Companies :", len(symbols))
-
 for symbol in symbols:
 
-    if not symbol.endswith(".N0000"):
-        print("Skipping :", symbol)
-        continue
-
     print("Processing :", symbol)
-    
+
     response = requests.post(
         f"https://www.cse.lk/api/companyInfoSummery?symbol={symbol}",
         headers={
