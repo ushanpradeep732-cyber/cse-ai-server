@@ -118,7 +118,7 @@ for symbol in symbols:
         "volume": info.get("tdyShareVolume", 0)
     }
 
-            r = requests.post(
+        r = requests.post(
         SUPABASE_URL + "/rest/v1/daily_prices?on_conflict=stock_id,trade_date",
         headers={
             **HEADERS,
