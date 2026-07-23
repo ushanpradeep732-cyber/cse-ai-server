@@ -1,23 +1,29 @@
 import requests
 import json
 
-url = "https://www.cse.lk/api/allSecurityCode"
+url = "https://www.cse.lk/api/todaySharePrice?page=0&size=300"
 
-response = requests.post(
-    url,
-    headers={
-        "User-Agent": "Mozilla/5.0"
-    }
-)
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
 
-print("Status :", response.status_code)
+response = requests.post(url, headers=headers)
 
-if response.status_code == 200:
-    data = response.json()
+print("Status:", response.status_code)
+print("=" * 80)
 
-    print("Records :", len(data))
-    print()
+data = response.json()
 
-    print(json.dumps(data[:5], indent=2))
+if isinstance(data, dict):
+    print("TYPE : DICT")
+    print("KEYS :", list(data.keys()))
+
+    print("\nFULL RESPONSE:\n")
+    print(json.dumps(data, indent=2))
+
 else:
-    print(response.text)
+    print("TYPE : LIST")
+    print("RECORDS :", len(data))
+
+    print("\nFIRST RECORD\n")
+    print(json.dumps(data[0], indent=2))
