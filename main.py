@@ -68,55 +68,77 @@ today = datetime.now().strftime("%Y-%m-%d")
 
 count = 0
 skip = 0
+failed = 0
 
-for item in prices:
+symbols = sorted(stock_map.keys())
 
-    if not isinstance(item, dict):
+print("Companies :", len(symbols))
+
+for symbol in symbols:
+
+    print("Processing :", symbol)
+
+    response = requests.post(
+        f"https://www.cse.lk/api/companyInfoSummery?symbol={symbol}",
+        headers={
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/json"
+        }
+    )
+
+    if response.status_code != 200:
+        print("API Error :", symbol, response.status_code)
+        failed += 1
         continue
 
-    symbol = item.get("symbol")
+    try:
+        data = response.json()
+        info = data.get("reqSymbolInfo")
 
-    if symbol is None:
-        continue
+        if info is None:
+            failed += 1
+            continue
 
-    if symbol not in stock_map:
-        skip += 1
+    except Exception as e:
+        print("JSON Error :", symbol, str(e))
+        failed += 1
         continue
 
     payload = {
         "stock_id": stock_map[symbol],
         "trade_date": today,
-        "open_price": item.get("open"),
-        "high_price": item.get("high"),
-        "low_price": item.get("low"),
-        "close_price": item.get("lastTradedPrice"),
-        "volume": item.get("quantity", 0)
+        "open_price": info.get("previousClose"),
+        "high_price": info.get("hiTrade"),
+        "low_price": info.get("lowTrade"),
+        "close_price": info.get("lastTradedPrice"),
+        "volume": info.get("tdyShareVolume", 0)
     }
 
     r = requests.post(
-        SUPABASE_URL + "/rest/v1/daily_prices?on_conflict=stock_id,trade_date",
-        headers={
-            **HEADERS,
-            "Prefer": "resolution=merge-duplicates"
-        },
-        json=payload
-    )
+    SUPABASE_URL + "/rest/v1/daily_prices?on_conflict=stock_id,trade_date",
+    headers={
+        **HEADERS,
+        "Prefer": "resolution=merge-duplicates"
+    },
+    json=payload
+)
 
-    if r.status_code in (200, 201):
-        count += 1
+if r.status_code in (200, 201):
+    count += 1
 
-    elif r.status_code == 409:
-        # Already exists
-        pass
+elif r.status_code == 409:
+    skip += 1
 
-    else:
-        print("-----------------------------------")
-        print("Insert Error :", symbol)
-        print("Status :", r.status_code)
-        print(r.text)
+else:
+    print("-----------------------------------")
+    print("Insert Error :", symbol)
+    print("Status :", r.status_code)
+    print(r.text)
+    failed += 1
 
 print("===================================")
 print("Imported :", count)
 print("Skipped :", skip)
+print("Failed :", failed)
 print("Finished")
 print("===================================")
