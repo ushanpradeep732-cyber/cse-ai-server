@@ -42,15 +42,12 @@ print("Stocks Loaded :", len(stock_map))
 # -----------------------------
 url = "https://www.cse.lk/api/todaySharePrice?page=0&size=300"
 
-try:
-    response = requests.post(
-        f"https://www.cse.lk/api/companyInfoSummery?symbol={symbol}",
-        headers={
-            "User-Agent": "Mozilla/5.0",
-            "Accept": "application/json"
-        },
-        timeout=15
-    )
+response = requests.post(
+    url,
+    headers={
+        "User-Agent": "Mozilla/5.0"
+    }
+)
 
 except requests.exceptions.Timeout:
     print("Timeout :", symbol)
@@ -86,6 +83,8 @@ symbols = sorted(stock_map.keys())
 
 print("Companies :", len(symbols))
 
+print("Companies :", len(symbols))
+
 for symbol in symbols:
 
     if not symbol.endswith(".N0000"):
@@ -93,9 +92,7 @@ for symbol in symbols:
         continue
 
     print("Processing :", symbol)
-
     
-
     response = requests.post(
         f"https://www.cse.lk/api/companyInfoSummery?symbol={symbol}",
         headers={
