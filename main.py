@@ -74,14 +74,14 @@ symbols = sorted(stock_map.keys())
 
 print("Companies :", len(symbols))
 
+
 for symbol in symbols:
 
     if not symbol.endswith(".N0000"):
-    print("Skipping :", symbol)
-    continue
+        print("Skipping :", symbol)
+        continue
 
     print("Processing :", symbol)
-
     response = requests.post(
         f"https://www.cse.lk/api/companyInfoSummery?symbol={symbol}",
         headers={
