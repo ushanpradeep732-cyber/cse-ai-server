@@ -43,12 +43,14 @@ print("Stocks Loaded :", len(stock_map))
 url = "https://www.cse.lk/api/todaySharePrice?page=0&size=300"
 
 response = requests.post(
-    url,
+    f"https://www.cse.lk/api/companyInfoSummery?symbol={symbol}",
     headers={
-        "User-Agent": "Mozilla/5.0"
-    }
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json"
+    },
+    timeout=15
 )
-
+   
 print("CSE Status :", response.status_code)
 
 if response.status_code != 200:
