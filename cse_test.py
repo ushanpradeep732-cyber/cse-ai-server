@@ -15,8 +15,14 @@ payload = {
     "symbol": symbol
 }
 
-response = requests.post(url, headers=headers, json=payload)
 
+response = requests.post(
+    url,
+    headers=headers,
+    data={
+        "symbol": "JKH.N0000"
+    }
+)
 print("Status :", response.status_code)
 print("=" * 80)
 
