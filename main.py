@@ -1,5 +1,4 @@
 import os
-import time
 import requests
 from datetime import datetime
 
@@ -17,84 +16,107 @@ print("CSE AI AUTO IMPORT")
 print(datetime.now())
 print("===================================")
 
-stocks_url = (
-    SUPABASE_URL +
-    "/rest/v1/stocks?select=id,symbol"
-)
+# -----------------------------
+# Load Stocks
+# -----------------------------
+stocks_url = SUPABASE_URL + "/rest/v1/stocks?select=id,symbol"
 
-response = requests.get(
-    stocks_url,
-    headers=HEADERS
-)
+response = requests.get(stocks_url, headers=HEADERS)
 
 if response.status_code != 200:
     print("Cannot load stocks")
     print(response.text)
-    exit()
+    raise SystemExit()
 
 stocks = response.json()
 
 stock_map = {}
 
-for row in stocks:
-    stock_map[row["symbol"]] = row["id"]
+for s in stocks:
+    stock_map[s["symbol"]] = s["id"]
 
-symbols = list(stock_map.keys())
+print("Stocks Loaded :", len(stock_map))
+
+# -----------------------------
+# Download Today Prices
+# -----------------------------
+url = "https://www.cse.lk/api/todaySharePrice?page=0&size=300"
+
+response = requests.post(
+    url,
+    headers={
+        "User-Agent": "Mozilla/5.0"
+    }
+)
+
+print("CSE Status :", response.status_code)
+
+if response.status_code != 200:
+    print(response.text)
+    raise SystemExit()
+
+data = response.json()
+
+if isinstance(data, dict):
+    prices = data.get("content", [])
+else:
+    prices = data
+
+print("Price Records :", len(prices))
 
 today = datetime.now().strftime("%Y-%m-%d")
 
-imported = 0
-skipped = 0
-failed = 0
+count = 0
+skip = 0
 
-total = len(symbols)
+for item in prices:
 
-print("Stocks Loaded :", total)
+    if not isinstance(item, dict):
+        continue
 
-print("===================================")
+    symbol = item.get("symbol")
 
-for index, symbol in enumerate(symbols, start=1):
+    if symbol is None:
+        continue
 
-    print(f"[{index}/{total}] {symbol}")
+    if symbol not in stock_map:
+        skip += 1
+        continue
 
-    url = (
-        "https://www.cse.lk/api/companyInfoSummery"
-        f"?symbol={symbol}"
+    payload = {
+        "stock_id": stock_map[symbol],
+        "trade_date": today,
+        "open_price": item.get("open"),
+        "high_price": item.get("high"),
+        "low_price": item.get("low"),
+        "close_price": item.get("lastTradedPrice"),
+        "volume": item.get("quantity", 0)
+    }
+
+    r = requests.post(
+        SUPABASE_URL + "/rest/v1/daily_prices?on_conflict=stock_id,trade_date",
+        headers={
+            **HEADERS,
+            "Prefer": "resolution=merge-duplicates"
+        },
+        json=payload
     )
 
-    try:
+    if r.status_code in (200, 201):
+        count += 1
 
-        response = requests.post(
-            url,
-            headers={
-                "User-Agent": "Mozilla/5.0",
-                "Accept": "application/json"
-            },
-            timeout=30
-        )
+    elif r.status_code == 409:
+        # Already exists
+        pass
 
-        if response.status_code != 200:
-            print("HTTP Error :", response.status_code)
-            failed += 1
-            continue
+    else:
+        print("-----------------------------------")
+        print("Insert Error :", symbol)
+        print("Status :", r.status_code)
+        print(r.text)
 
-        data = response.json()
-
-        info = data.get("reqSymbolInfo")
-
-        if info is None:
-            print("No Symbol Info")
-            skipped += 1
-            continue
-
-        payload = {
-            "stock_id": stock_map[symbol],
-            "trade_date": today,
-            "open_price": info.get("previousClose"),
-            "high_price": info.get("hiTrade"),
-            "low_price": info.get("lowTrade"),
-            "close_price": info.get("lastTradedPrice"),
-            "volume": info.get("tdyShareVolume", 0)
-        }
-
-        r = requ
+print("===================================")
+print("Imported :", count)
+print("Skipped :", skip)
+print("Finished")
+print("===================================")
