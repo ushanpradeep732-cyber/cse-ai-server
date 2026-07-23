@@ -51,4 +51,50 @@ total = len(symbols)
 
 print("Stocks Loaded :", total)
 
-pri
+print("===================================")
+
+for index, symbol in enumerate(symbols, start=1):
+
+    print(f"[{index}/{total}] {symbol}")
+
+    url = (
+        "https://www.cse.lk/api/companyInfoSummery"
+        f"?symbol={symbol}"
+    )
+
+    try:
+
+        response = requests.post(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "application/json"
+            },
+            timeout=30
+        )
+
+        if response.status_code != 200:
+            print("HTTP Error :", response.status_code)
+            failed += 1
+            continue
+
+        data = response.json()
+
+        info = data.get("reqSymbolInfo")
+
+        if info is None:
+            print("No Symbol Info")
+            skipped += 1
+            continue
+
+        payload = {
+            "stock_id": stock_map[symbol],
+            "trade_date": today,
+            "open_price": info.get("previousClose"),
+            "high_price": info.get("hiTrade"),
+            "low_price": info.get("lowTrade"),
+            "close_price": info.get("lastTradedPrice"),
+            "volume": info.get("tdyShareVolume", 0)
+        }
+
+        r = requ
