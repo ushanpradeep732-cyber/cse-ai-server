@@ -42,16 +42,26 @@ print("Stocks Loaded :", len(stock_map))
 # -----------------------------
 url = "https://www.cse.lk/api/todaySharePrice?page=0&size=300"
 
-response = requests.post(
-    f"https://www.cse.lk/api/companyInfoSummery?symbol={symbol}",
-    headers={
-        "User-Agent": "Mozilla/5.0",
-        "Accept": "application/json"
-    },
-    timeout=15
-)
-   
-print("CSE Status :", response.status_code)
+try:
+    response = requests.post(
+        f"https://www.cse.lk/api/companyInfoSummery?symbol={symbol}",
+        headers={
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/json"
+        },
+        timeout=15
+    )
+
+except requests.exceptions.Timeout:
+    print("Timeout :", symbol)
+    failed += 1
+    continue
+
+except requests.exceptions.RequestException as e:
+    print("Request Error :", symbol)
+    print(e)
+    failed += 1
+    continue
 
 if response.status_code != 200:
     print(response.text)
