@@ -76,6 +76,10 @@ print("Companies :", len(symbols))
 
 for symbol in symbols:
 
+    if not symbol.endswith(".N0000"):
+    print("Skipping :", symbol)
+    continue
+
     print("Processing :", symbol)
 
     response = requests.post(
@@ -114,27 +118,27 @@ for symbol in symbols:
         "volume": info.get("tdyShareVolume", 0)
     }
 
-    r = requests.post(
-    SUPABASE_URL + "/rest/v1/daily_prices?on_conflict=stock_id,trade_date",
-    headers={
-        **HEADERS,
-        "Prefer": "resolution=merge-duplicates"
-    },
-    json=payload
-)
+            r = requests.post(
+        SUPABASE_URL + "/rest/v1/daily_prices?on_conflict=stock_id,trade_date",
+        headers={
+            **HEADERS,
+            "Prefer": "resolution=merge-duplicates"
+        },
+        json=payload
+    )
 
-if r.status_code in (200, 201):
-    count += 1
+    if r.status_code in (200, 201):
+        count += 1
 
-elif r.status_code == 409:
-    skip += 1
+    elif r.status_code == 409:
+        skip += 1
 
-else:
-    print("-----------------------------------")
-    print("Insert Error :", symbol)
-    print("Status :", r.status_code)
-    print(r.text)
-    failed += 1
+    else:
+        print("-----------------------------------")
+        print("Insert Error :", symbol)
+        print("Status :", r.status_code)
+        print(r.text)
+        failed += 1
 
 print("===================================")
 print("Imported :", count)
